@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Data Collection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* General Body and Reset Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: #00000a;
+            color: #ffffff;
+            font-family: 'Orbitron', sans-serif;
+            overflow-x: hidden;
+            padding-top: 120px; /* Space for fixed header */
+            padding-bottom: 80px; /* Space for fixed footer */
+        }
+
+        /* Canvas for Space Visualization */
+        #space-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        /* Header Styling */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2.5rem;
+            background: rgba(10, 5, 25, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(159, 121, 255, 0.2);
+            z-index: 10;
+            transition: background 0.3s ease;
+        }
+        
+        .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #d1c4e9;
+            letter-spacing: 2px;
+        }
+        
+        nav a {
+            color: #d1c4e9;
+            text-decoration: none;
+            margin-left: 1.5rem;
+            font-size: 1rem;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        
+        nav a:hover {
+            color: #ffffff;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+        }
+
+        /* Main Content Container */
+        .content-container {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 1200px; /* Increased max-width for more fields */
+            margin: 0 auto;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: clamp(2rem, 6vw, 3rem);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            background: linear-gradient(90deg, #9f79ff, #c2a8ff, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(190, 168, 255, 0.5);
+        }
+        
+        .subtitle {
+            color: #d1c4e9;
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
+        }
+        
+        /* Form Styling */
+        .form-container {
+            background: rgba(23, 13, 48, 0.15); /* Heavily increased transparency */
+            backdrop-filter: blur(6px); 
+            -webkit-backdrop-filter: blur(6px);
+            border: 1px solid rgba(159, 121, 255, 0.2);
+            border-radius: 15px;
+            padding: 2.5rem;
+            box-shadow: 0 8px 32px 0 rgba(11, 4, 26, 0.37);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.75rem;
+            text-align: left;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 0.75rem;
+            color: #c2a8ff;
+            font-weight: 400;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input {
+            padding: 0.8rem;
+            background: rgba(10, 5, 30, 0.3); /* Heavily increased input transparency */
+            border: 1px solid rgba(159, 121, 255, 0.3);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            font-family: sans-serif; /* A more readable font for inputs */
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #c2a8ff;
+            box-shadow: 0 0 10px rgba(159, 121, 255, 0.5);
+        }
+        
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(90deg, #8e44ad, #9b59b6);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1.5rem;
+            border-bottom: 3px solid #6c3483;
+            grid-column: 1 / -1; /* Make button span full width */
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(155, 89, 182, 0.4);
+        }
+
+        .result-container {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: rgba(10, 5, 30, 0.7);
+            border: 1px solid rgba(159, 121, 255, 0.4);
+            border-radius: 15px;
+            text-align: center;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: sans-serif;
+            transition: opacity 0.5s ease;
+        }
+
+        /* Footer Styling */
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            padding: 1rem;
+            background: rgba(10, 5, 25, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-top: 1px solid rgba(159, 121, 255, 0.2);
+            font-size: 0.9rem;
+            color: #aaa;
+            z-index: 10;
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">COSMIC GW</div>
+        <nav>
+            <a href="{% url 'main' %}">Home</a>
+            <a href="{% url 'tune_model' %}">HyperParameter Tuning</a>
+            <a href="{% url 'how_it_works' %}">How It Works</a>
+            <a href="{% url 'about' %}">About</a>
+        </nav>
+    </header>
+
+    <canvas id="space-canvas"></canvas>
+
+    <main class="content-container">
+        <h1>KOI Data Submission</h1>
+        <p class="subtitle">Log new Kepler Object of Interest observations</p>
+
+        <div class="form-container">
+            <form id="cosmicForm" action="{% url 'predict_koi' %}" method="post">
+                {% csrf_token %}
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="koi_period">KOI Period</label>
+                        <input type="number" step="any" id="koi_period" name="koi_period" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="koi_impact">KOI Impact</label>
+                        <input type="number" step="any" id="koi_impact" name="koi_impact" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="koi_duration">KOI Duration</label>
+                        <input type="number" step="any" id="koi_duration" name="koi_duration" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="koi_depth">KOI Depth</label>
+                        <input type="number" step="any" id="koi_depth" name="koi_depth" required>
+                    </div>
+                     <div class="form-group">
+                        <label for="koi_prad">KOI PRAD</label>
+                        <input type="number" step="any" id="koi_prad" name="koi_prad" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="koi_sma">KOI SMA</label>
+                        <input type="number" step="any" id="koi_sma" name="koi_sma" required>
+                    </div>
+                     <div class="form-group">
+                        <label for="koi_teq">KOI TEQ</label>
+                        <input type="number" step="any" id="koi_teq" name="koi_teq" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="koi_insol">KOI Insol</label>
+                        <input type="number" step="any" id="koi_insol" name="koi_insol" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="koi_model_snr">KOI Model SNR</label>
+                        <input type="number" step="any" id="koi_model_snr" name="koi_model_snr" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="koi_steff">KOI Steff</label>
+                        <input type="number" step="any" id="koi_steff" name="koi_steff" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="koi_slogg">KOI Slogg</label>
+                        <input type="number" step="any" id="koi_slogg" name="koi_slogg" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="koi_srad">KOI Srad</label>
+                        <input type="number" step="any" id="koi_srad" name="koi_srad" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="koi_kepmag">KOI Kepmag</label>
+                        <input type="number" step="any" id="koi_kepmag" name="koi_kepmag" required>
+                    </div>
+                     <button type="submit" class="submit-btn">Transmit KOI Data</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="result-container">
+            <p id="resultText">Transmission log will appear here...</p>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Cosmic Gateway. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+    // --- Space Visualization Script (This part remains the same) ---
+    const canvas = document.getElementById('space-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, stars = [], comets = [], milkyWayStars = [], 
+        starCount = 400,
+        milkyWayStarCount = 2500,
+        mouse = { x: null, y: null };
+
+    function randomGaussian(mean, stdDev) {
+        let u1, u2, w;
+        do {
+            u1 = 2 * Math.random() - 1;
+            u2 = 2 * Math.random() - 1;
+            w = u1 * u1 + u2 * u2;
+        } while (w >= 1);
+        w = Math.sqrt((-2 * Math.log(w)) / w);
+        return mean + stdDev * u1 * w;
+    }
+
+    function init() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+        mouse.x = width / 2;
+        mouse.y = height / 2;
+        stars = [];
+        for (let i = 0; i < starCount; i++) {
+            stars.push({
+                x: Math.random() * width, y: Math.random() * height,
+                size: Math.random() * 1.5 + 0.5, speed: Math.random() * 0.4 + 0.1,
+                alpha: Math.random() * 0.5 + 0.5, alphaDirection: 1,
+                twinkleSpeed: Math.random() * 0.015
+            });
+        }
+        milkyWayStars = [];
+        for (let i = 0; i < milkyWayStarCount; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const radius = randomGaussian(0, width * 0.3);
+            const x = width / 2 + Math.cos(angle) * radius;
+            const y = height / 2 + Math.sin(angle) * radius * 0.2 + randomGaussian(0, 30);
+            milkyWayStars.push({
+                x: x, y: y,
+                size: Math.random() * 0.8,
+                alpha: Math.random() * 0.3 + 0.05, alphaDirection: 1,
+                twinkleSpeed: Math.random() * 0.01
+            });
+        }
+        comets = [];
+    }
+
+    function Comet() {
+        this.x = Math.random() * width; this.y = -50;
+        this.speed = Math.random() * 3 + 2; this.size = Math.random() * 2 + 1;
+        this.length = Math.random() * 100 + 50;
+    }
+
+    function drawComets() {
+        for (let i = 0; i < comets.length; i++) {
+            const comet = comets[i];
+            const gradient = ctx.createLinearGradient(comet.x, comet.y, comet.x - this.length / 4, comet.y - comet.length);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 0.5)');
+            gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(comet.x, comet.y, comet.size, 0, Math.PI * 2);
+            ctx.fill();
+            comet.y += comet.speed;
+            comet.x -= comet.speed / 4;
+            if (comet.y > height + 50) { comets.splice(i, 1); i--; }
+        }
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+        const gradient = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, Math.max(width, height));
+        gradient.addColorStop(0, 'rgba(15, 5, 40, 0.1)');
+        gradient.addColorStop(1, 'rgba(0, 0, 10, 0.5)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, width, height);
+        
+        const parallaxX = (mouse.x - width / 2) * 0.005;
+        const parallaxY = (mouse.y - height / 2) * 0.005;
+
+        ctx.save();
+        ctx.translate(parallaxX * 0.2, parallaxY * 0.2);
+        ctx.rotate(0.2);
+        for (const star of milkyWayStars) {
+            if (star.alpha > 0.4 || star.alpha < 0.05) { star.alphaDirection *= -1; }
+            star.alpha += star.twinkleSpeed * star.alphaDirection;
+            ctx.globalAlpha = star.alpha;
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
+
+        for (const star of stars) {
+            star.y -= star.speed;
+            if (star.y < 0) { star.y = height; star.x = Math.random() * width; }
+            if (star.alpha > 1 || star.alpha < 0.1) { star.alphaDirection *= -1; }
+            star.alpha += star.twinkleSpeed * star.alphaDirection;
+            ctx.save();
+            ctx.globalAlpha = star.alpha;
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(star.x + parallaxX * star.size, star.y + parallaxY * star.size, star.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        if (Math.random() < 0.005) { comets.push(new Comet()); }
+        drawComets();
+        requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', init);
+    window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+    init();
+    animate();
+    
+    // --- *** NEW AND IMPROVED FORM SUBMISSION LOGIC *** ---
+    document.getElementById('cosmicForm').addEventListener('submit', function(e) {
+        e.preventDefault(); // Still need this to stop the page from reloading!
+        
+        const form = e.target;
+        const formData = new FormData(form);
+        const resultElement = document.getElementById('resultText');
+        const submitButton = form.querySelector('.submit-btn');
+
+        // Provide immediate feedback to the user
+        resultElement.style.opacity = 0;
+        submitButton.textContent = 'TRANSMITTING...';
+        submitButton.disabled = true;
+
+        // Use the Fetch API to send data to your Django view
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            // Django requires the CSRF token for POST requests
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        })
+        .then(response => response.json()) // Parse the JSON response from the server
+        .then(data => {
+            // Update the result text with the actual prediction
+            if (data.status === 'success') {
+                resultElement.innerHTML = `<strong>Prediction:</strong> ${data.prediction} <br> <strong>Confidence:</strong> ${data.probability}`;
+                resultElement.style.color = "#c2a8ff";
+            } else {
+                resultElement.textContent = `Error: ${data.message}`;
+                resultElement.style.color = "#ff6b6b"; // An error color
+            }
+        })
+        .catch(error => {
+            // Handle network errors
+            console.error('Error:', error);
+            resultElement.textContent = 'Transmission failed. Could not connect to the server.';
+            resultElement.style.color = "#ff6b6b";
+        })
+        .finally(() => {
+            // This runs whether the fetch succeeded or failed
+            resultElement.style.opacity = 1;
+            submitButton.textContent = 'Transmit KOI Data';
+            submitButton.disabled = false;
+            form.reset(); // Clear the form fields
+        });
+    });
+</script>
+</body>
+</html>
+

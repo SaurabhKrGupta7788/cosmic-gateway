@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Gateway</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* General Body and Reset Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: #00000a;
+            color: #ffffff;
+            font-family: 'Orbitron', sans-serif;
+            overflow-x: hidden; /* Prevents horizontal scrollbars */
+        }
+
+        /* Canvas for Space Visualization */
+        #space-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        /* Header Styling */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2.5rem;
+            background: rgba(10, 5, 25, 0.3);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(159, 121, 255, 0.2);
+            z-index: 10;
+            transition: background 0.3s ease;
+        }
+
+        body.scrolled header {
+             background: rgba(10, 5, 25, 0.8);
+        }
+        
+        .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #d1c4e9;
+            letter-spacing: 2px;
+        }
+        
+        nav a {
+            color: #d1c4e9;
+            text-decoration: none;
+            margin-left: 1.5rem;
+            font-size: 1rem;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        
+        nav a:hover {
+            color: #ffffff;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+        }
+
+        /* Hero Section Styling */
+        .hero-section {
+            position: relative;
+            z-index: 2;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .main-title {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            background: linear-gradient(90deg, #9f79ff, #c2a8ff, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(190, 168, 255, 0.5), 0 0 20px rgba(190, 168, 255, 0.3);
+            animation: pulse-glow 4s infinite ease-in-out;
+        }
+
+        .subtitle {
+            font-size: clamp(1rem, 3vw, 1.25rem);
+            margin-top: 1rem;
+            color: #d1c4e9;
+            letter-spacing: 1px;
+            max-width: 600px;
+        }
+        
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            font-size: 0.8rem;
+            color: #aaa;
+            letter-spacing: 1px;
+            animation: bounce 2s infinite;
+        }
+        
+        .scroll-indicator::after {
+            content: 'v';
+            display: block;
+            margin-top: 5px;
+            font-size: 1.2rem;
+        }
+        
+        /* Cards Section Styling */
+        .cards-section {
+            position: relative;
+            z-index: 2;
+            padding: 6rem 2rem;
+            background: linear-gradient(180deg, rgba(0,0,10,0) 0%, #00000a 20%, #00000a 80%, rgba(0,0,10,0) 100%);
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 1s ease-out, transform 1s ease-out;
+        }
+
+        .cards-section.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .cards-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(23, 13, 48, 0.4);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(159, 121, 255, 0.3);
+            border-radius: 15px;
+            padding: 2.5rem 2rem;
+            width: 300px;
+            text-decoration: none;
+            color: #ffffff;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 8px 32px 0 rgba(11, 4, 26, 0.37);
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 0 25px rgba(159, 121, 255, 0.6), 0 0 40px rgba(159, 121, 255, 0.4);
+            border-color: rgba(159, 121, 255, 0.7);
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #c2a8ff;
+        }
+
+        .card p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            font-family: sans-serif;
+            color: #e0e0e0;
+        }
+
+        /* Footer Styling */
+        footer {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            text-align: center;
+            padding: 2rem 1rem;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        
+        /* Keyframe Animations */
+        @keyframes pulse-glow {
+            0%, 100% {
+                text-shadow: 0 0 10px rgba(190, 168, 255, 0.5), 0 0 20px rgba(190, 168, 255, 0.3);
+            }
+            50% {
+                text-shadow: 0 0 20px rgba(190, 168, 255, 0.8), 0 0 35px rgba(190, 168, 255, 0.5);
+            }
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+    </style>
+</head>
+<body>
+    
+    <header>
+        <div class="logo">COSMIC GW</div>
+        <nav>
+            <a href="{% url 'main' %}">Home</a>
+            <a href="{% url 'how_it_works' %}">How It Works</a>
+            <a href="{% url 'about' %}">About</a>
+        </nav>
+    </header>
+
+    <canvas id="space-canvas"></canvas>
+
+    <main>
+        <section class="hero-section">
+            <h1 class="main-title">Cosmic Gateway</h1>
+            <p class="subtitle">Your portal to the universe. Discover new worlds and analyze celestial data from across the galaxies.</p>
+            <div class="scroll-indicator">Scroll Down</div>
+        </section>
+
+        <section class="cards-section" id="cards-section">
+            <div class="cards-wrapper">
+                 <a href="{% url 'k2' %}" class="card">
+                    <h2>Exoplanets Prediction</h2>
+                    <p>Use advance model to predict and explore and characterize new exoplanets.</p>
+                </a>
+                <a href="{% url 'tune_model' %}" class="card">
+                    <h2>Create Your Model</h2>
+                    <p>Create new model with with new hyperparameters and play train them.</p>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Cosmic Gateway. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // --- Space Visualization Script ---
+        const canvas = document.getElementById('space-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let stars = [];
+        let planets = [];
+        const starCount = 500;
+        const mouse = { x: null, y: null };
+
+        // Generic constructor for celestial bodies
+        function CelestialBody(x, y, size, speed, color) {
+            this.x = x;
+            this.y = y;
+            this.initialX = x;
+            this.initialY = y;
+            this.size = size;
+            this.speed = speed;
+            this.color = color;
+        }
+
+        function init() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Mouse center for parallax
+            mouse.x = width / 2;
+            mouse.y = height / 2;
+
+            // Create stars
+            stars = [];
+            for (let i = 0; i < starCount; i++) {
+                stars.push({
+                    ...new CelestialBody(Math.random() * width, Math.random() * height, Math.random() * 1.5 + 0.5, Math.random() * 0.4 + 0.1),
+                    alpha: Math.random() * 0.5 + 0.5,
+                    alphaDirection: 1,
+                });
+            }
+            
+            // Create planets
+            planets = [
+                { body: new CelestialBody(width/2, height/2, 8, 0.003, 'rgba(100, 150, 255, 0.8)'), radius: 150, angle: Math.random() * Math.PI * 2 },
+                { body: new CelestialBody(width/2, height/2, 5, 0.005, 'rgba(255, 150, 100, 0.7)'), radius: 100, angle: Math.random() * Math.PI * 2 }
+            ];
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            const gradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, Math.max(width, height));
+            gradient.addColorStop(0, 'rgba(15, 5, 40, 0.1)');
+            gradient.addColorStop(1, 'rgba(0, 0, 10, 0.5)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
+            
+            // Parallax effect based on mouse position
+            const parallaxX = (mouse.x - width / 2) * 0.005;
+            const parallaxY = (mouse.y - height / 2) * 0.005;
+
+            // Draw and update stars
+            for (const star of stars) {
+                star.y -= star.speed;
+                if (star.y < 0) {
+                    star.y = height;
+                    star.x = Math.random() * width;
+                }
+                if (star.alpha > 1) star.alphaDirection = -1;
+                if (star.alpha < 0.1) star.alphaDirection = 1;
+                star.alpha += 0.005 * star.alphaDirection;
+
+                ctx.save();
+                ctx.globalAlpha = star.alpha;
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(star.x + parallaxX * star.size, star.y + parallaxY * star.size, star.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+            
+            // Draw central sun
+            const sunSize = 25 + Math.sin(Date.now() * 0.001) * 5;
+            const sunGradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, sunSize);
+            sunGradient.addColorStop(0, 'rgba(255, 220, 150, 1)');
+            sunGradient.addColorStop(0.5, 'rgba(255, 180, 80, 0.5)');
+            sunGradient.addColorStop(1, 'rgba(255, 150, 0, 0)');
+            ctx.fillStyle = sunGradient;
+            ctx.beginPath();
+            ctx.arc(width/2, height/2, sunSize * 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw planets
+            for(const planet of planets) {
+                planet.angle += planet.body.speed;
+                planet.body.x = width/2 + Math.cos(planet.angle) * planet.radius;
+                planet.body.y = height/2 + Math.sin(planet.angle) * planet.radius;
+                
+                ctx.fillStyle = planet.body.color;
+                ctx.beginPath();
+                ctx.arc(planet.body.x + parallaxX * planet.body.size, planet.body.y + parallaxY * planet.body.size, planet.body.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', init);
+        window.addEventListener('mousemove', e => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+        
+        init();
+        animate();
+        
+        // --- Scroll Reveal and Header background Script ---
+        const cardsSection = document.getElementById('cards-section');
+
+        function revealOnScroll() {
+            const triggerPoint = window.innerHeight * 0.6; // Reveal when 60% of the viewport is scrolled
+            if (window.scrollY > triggerPoint) {
+                cardsSection.classList.add('is-visible');
+            } else {
+                cardsSection.classList.remove('is-visible');
+            }
+            
+            // Add class to body when scrolled for header background
+            if(window.scrollY > 50) {
+                document.body.classList.add('scrolled');
+            } else {
+                document.body.classList.remove('scrolled');
+            }
+        }
+        
+        window.addEventListener('scroll', revealOnScroll);
+    </script>
+</body>
+</html>
+

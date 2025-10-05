@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - ExoVision</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-glow: rgba(159, 121, 255, 0.7);
+            --primary-border: rgba(159, 121, 255, 0.4);
+            --primary-bg: rgba(23, 13, 48, 0.25);
+            --primary-text: #d1c4e9;
+            --body-text: #c0c0d0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            background-color: #00000a;
+            color: #ffffff;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 300;
+            line-height: 1.7;
+            overflow: hidden;
+            padding-top: 100px;
+            padding-bottom: 80px;
+        }
+
+        #space-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        header {
+            position: fixed; top: 0; left: 0; width: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1rem 2.5rem;
+            background: rgba(10, 5, 25, 0.8);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(159, 121, 255, 0.2);
+            z-index: 10;
+        }
+        
+        .logo { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 1.5rem; color: var(--primary-text); letter-spacing: 2px; }
+        nav a { font-family: 'Orbitron', sans-serif; color: var(--primary-text); text-decoration: none; margin-left: 1.5rem; font-size: 1rem; transition: all 0.3s ease; }
+        nav a:hover { color: #ffffff; text-shadow: 0 0 8px #fff; }
+
+        .content-container {
+            position: relative; z-index: 2; width: 100%;
+            max-width: 960px; height: calc(100vh - 180px); 
+            margin: 0 auto; padding: 2rem;
+            text-align: center;
+            overflow-y: auto;
+        }
+        
+        .content-container::-webkit-scrollbar { width: 8px; }
+        .content-container::-webkit-scrollbar-track { background: rgba(10, 5, 30, 0.5); }
+        .content-container::-webkit-scrollbar-thumb { background-color: var(--primary-border); border-radius: 10px; border: 2px solid transparent; background-clip: content-box; }
+        .content-container::-webkit-scrollbar-thumb:hover { background-color: var(--primary-glow); }
+
+        h1, h2 {
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #9f79ff, #c2a8ff, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(190, 168, 255, 0.5);
+        }
+
+        h1 { font-size: clamp(2.5rem, 6vw, 3.5rem); margin-bottom: 0.5rem; }
+        h2 { font-size: clamp(1.5rem, 4vw, 2rem); margin-top: 3rem; margin-bottom: 1.5rem; }
+        
+        .subtitle { color: var(--primary-text); font-size: 1.1rem; margin-bottom: 3rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+        
+        .glass-container {
+            background: var(--primary-bg);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--primary-border);
+            border-radius: 15px;
+            padding: 2rem 2.5rem;
+            box-shadow: 0 8px 32px 0 rgba(11, 4, 26, 0.37);
+            text-align: left;
+            margin-bottom: 2rem;
+        }
+
+        .glass-container p {
+            color: var(--body-text);
+            margin-bottom: 1rem;
+        }
+
+        .glass-container strong {
+            color: #e0e0ff;
+            font-weight: 400;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: rgba(10, 5, 30, 0.5);
+            border: 1px solid rgba(159, 121, 255, 0.2);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .feature-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary-text);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        footer {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            text-align: center; padding: 1rem;
+            background: rgba(10, 5, 25, 0.8);
+            backdrop-filter: blur(8px);
+            border-top: 1px solid rgba(159, 121, 255, 0.2);
+            font-size: 0.9rem; color: #aaa; z-index: 10;
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">COSMIC GW</div>
+        <nav>
+             <a href="{% url 'main' %}">Home</a>
+            <a href="{% url 'how_it_works' %}">How It Works</a>
+            <a href="{% url 'about' %}">About</a>
+        </nav>
+    </header>
+
+    <canvas id="space-canvas"></canvas>
+
+    <main class="content-container">
+        <h1>About ExoVision</h1>
+        <p class="subtitle">An interactive journey into exoplanet discovery and machine learning.</p>
+
+        <div class="glass-container">
+            <p><strong>ExoVision</strong> is more than just a website; it's an educational platform designed to bridge the gap between complex astronomical data and the fascinating world of artificial intelligence. Our mission is to provide a hands-on experience for enthusiasts, students, and researchers to explore how machine learning can be used to classify exoplanets from the vast dataset provided by the Kepler Space Telescope.</p>
+            <p>This project was born out of a passion for both space exploration and data science. We believe that by making these powerful tools accessible and interactive, we can inspire the next generation of scientists and developers.</p>
+        </div>
+
+        <h2>Core Features</h2>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>KOI Data Submission</h3>
+                <p>Submit real or hypothetical Kepler Object of Interest (KOI) data. Our base model provides an instant classification, distinguishing between 'Confirmed' and 'Candidate' exoplanets based on the provided inputs.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Interactive Tuning</h3>
+                <p>Step into the shoes of a machine learning engineer. Our hyperparameter tuning module allows you to visually construct and train your own neural network, offering a tangible understanding of how different parameters affect model behavior.</p>
+            </div>
+        </div>
+        
+        <h2>About the Developer</h2>
+        <div class="glass-container">
+            <p><strong>ExoVision</strong> is proudly developed by <strong>Coding Masters</strong>, a team passionate about the intersection of technology, data science, and space exploration. Our goal is to create intuitive and powerful tools that make complex scientific concepts accessible to everyone.</p>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 ExoVision. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // Full Space Visualization Script (Same as other pages)
+        const spaceCanvas = document.getElementById('space-canvas');
+        const s_ctx = spaceCanvas.getContext('2d');
+        let width, height, stars = [], comets = [], milkyWayStars = [], 
+            starCount = 400, milkyWayStarCount = 2500,
+            mouse = { x: null, y: null };
+
+        function randomGaussian(mean, stdDev) {
+            let u1, u2, w;
+            do {
+                u1 = 2 * Math.random() - 1;
+                u2 = 2 * Math.random() - 1;
+                w = u1 * u1 + u2 * u2;
+            } while (w >= 1);
+            w = Math.sqrt((-2 * Math.log(w)) / w);
+            return mean + stdDev * u1 * w;
+        }
+
+        function initSpace() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            spaceCanvas.width = width;
+            spaceCanvas.height = height;
+            mouse.x = width / 2;
+            mouse.y = height / 2;
+            stars = [];
+            for (let i = 0; i < starCount; i++) {
+                stars.push({
+                    x: Math.random() * width, y: Math.random() * height,
+                    size: Math.random() * 1.5 + 0.5, speed: Math.random() * 0.4 + 0.1,
+                    alpha: Math.random() * 0.5 + 0.5, alphaDirection: 1,
+                    twinkleSpeed: Math.random() * 0.015
+                });
+            }
+            milkyWayStars = [];
+            for (let i = 0; i < milkyWayStarCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = randomGaussian(0, width * 0.3);
+                const x = width / 2 + Math.cos(angle) * radius;
+                const y = height / 2 + Math.sin(angle) * radius * 0.2 + randomGaussian(0, 30);
+                milkyWayStars.push({
+                    x: x, y: y, size: Math.random() * 0.8,
+                    alpha: Math.random() * 0.3 + 0.05, alphaDirection: 1,
+                    twinkleSpeed: Math.random() * 0.01
+                });
+            }
+            comets = [];
+        }
+
+        function Comet() {
+            this.x = Math.random() * width; this.y = -50;
+            this.speed = Math.random() * 3 + 2; this.size = Math.random() * 2 + 1;
+            this.length = Math.random() * 100 + 50;
+        }
+
+        function drawComets() {
+            for (let i = 0; i < comets.length; i++) {
+                const comet = comets[i];
+                const gradient = s_ctx.createLinearGradient(comet.x, comet.y, comet.x - this.length / 4, comet.y - comet.length);
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.5)');
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                s_ctx.fillStyle = gradient;
+                s_ctx.beginPath();
+                s_ctx.arc(comet.x, comet.y, comet.size, 0, Math.PI * 2);
+                s_ctx.fill();
+                comet.y += comet.speed;
+                comet.x -= comet.speed / 4;
+                if (comet.y > height + 50) { comets.splice(i, 1); i--; }
+            }
+        }
+
+        function animateSpace() {
+            s_ctx.clearRect(0, 0, width, height);
+            const gradient = s_ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, Math.max(width, height));
+            gradient.addColorStop(0, 'rgba(15, 5, 40, 0.1)');
+            gradient.addColorStop(1, 'rgba(0, 0, 10, 0.5)');
+            s_ctx.fillStyle = gradient;
+            s_ctx.fillRect(0, 0, width, height);
+            const parallaxX = (mouse.x - width / 2) * 0.005;
+            const parallaxY = (mouse.y - height / 2) * 0.005;
+            s_ctx.save();
+            s_ctx.translate(parallaxX * 0.2, parallaxY * 0.2);
+            s_ctx.rotate(0.2);
+            for (const star of milkyWayStars) {
+                if (star.alpha > 0.4 || star.alpha < 0.05) { star.alphaDirection *= -1; }
+                star.alpha += star.twinkleSpeed * star.alphaDirection;
+                s_ctx.globalAlpha = star.alpha;
+                s_ctx.fillStyle = 'white';
+                s_ctx.beginPath();
+                s_ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                s_ctx.fill();
+            }
+            s_ctx.restore();
+            for (const star of stars) {
+                star.y -= star.speed;
+                if (star.y < 0) { star.y = height; star.x = Math.random() * width; }
+                if (star.alpha > 1 || star.alpha < 0.1) { star.alphaDirection *= -1; }
+                star.alpha += star.twinkleSpeed * star.alphaDirection;
+                s_ctx.save();
+                s_ctx.globalAlpha = star.alpha;
+                s_ctx.fillStyle = 'white';
+                s_ctx.beginPath();
+                s_ctx.arc(star.x + parallaxX * star.size, star.y + parallaxY * star.size, star.size, 0, Math.PI * 2);
+                s_ctx.fill();
+                s_ctx.restore();
+            }
+            if (Math.random() < 0.005) { comets.push(new Comet()); }
+            drawComets();
+            requestAnimationFrame(animateSpace);
+        }
+        
+        window.addEventListener('resize', initSpace);
+        window.addEventListener('mousemove', e => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+        initSpace();
+        animateSpace();
+
+    </script>
+</body>
+</html>
+

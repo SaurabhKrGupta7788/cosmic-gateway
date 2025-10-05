@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyperparameter Tuning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-glow: rgba(159, 121, 255, 0.7);
+            --primary-border: rgba(159, 121, 255, 0.4);
+            --primary-bg: rgba(23, 13, 48, 0.25);
+            --primary-text: #d1c4e9;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            background-color: #00000a;
+            color: #ffffff;
+            font-family: 'Orbitron', sans-serif;
+            overflow-x: hidden;
+            padding-top: 100px;
+            padding-bottom: 80px;
+        }
+
+        #space-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        header {
+            position: fixed; top: 0; left: 0; width: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1rem 2.5rem;
+            background: rgba(10, 5, 25, 0.8);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(159, 121, 255, 0.2);
+            z-index: 10;
+        }
+        
+        .logo { font-weight: 700; font-size: 1.5rem; color: var(--primary-text); letter-spacing: 2px; }
+        nav a { color: var(--primary-text); text-decoration: none; margin-left: 1.5rem; font-size: 1rem; transition: all 0.3s ease; }
+        nav a:hover { color: #ffffff; text-shadow: 0 0 8px #fff; }
+
+        .content-container {
+            position: relative; z-index: 2; width: 100%;
+            max-width: 1200px; margin: 0 auto; padding: 2rem;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: clamp(2rem, 6vw, 3rem); margin-bottom: 0.5rem;
+            text-transform: uppercase; letter-spacing: 3px;
+            background: linear-gradient(90deg, #9f79ff, #c2a8ff, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(190, 168, 255, 0.5);
+        }
+        
+        .subtitle { color: var(--primary-text); font-size: 1.1rem; margin-bottom: 2rem; }
+        
+        .main-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .glass-container {
+            background: var(--primary-bg);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--primary-border);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px 0 rgba(11, 4, 26, 0.37);
+        }
+
+        .tuner-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 900px) {
+            .tuner-container {
+                grid-template-columns: 300px 1fr;
+            }
+        }
+        
+        .param-sliders { text-align: left; }
+        .param-slider { margin-bottom: 1.5rem; }
+        .param-slider label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            color: #c2a8ff;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+        input[type="range"] {
+            width: 100%; -webkit-appearance: none;
+            background: transparent; cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 6px; background: rgba(10, 5, 30, 0.5); border-radius: 3px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 18px; width: 18px;
+            background: #c2a8ff; border-radius: 50%;
+            border: 2px solid #fff; margin-top: -6px;
+            box-shadow: 0 0 8px var(--primary-glow);
+        }
+        
+        #nn-visualization { width: 100%; min-height: 350px; }
+
+        .train-btn {
+            width: 100%; padding: 1rem;
+            background: linear-gradient(90deg, #16a085, #1abc9c);
+            border: none; border-radius: 8px; color: white;
+            font-size: 1.1rem; font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase; cursor: pointer;
+            transition: all 0.3s ease; border-bottom: 3px solid #117a65;
+            margin-top: 1.5rem;
+        }
+        .train-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(22, 160, 133, 0.4); }
+        .train-btn:disabled { background: #555; cursor: not-allowed; }
+
+        .prediction-section {
+            display: none; /* Initially hidden */
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem; text-align: left;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label { color: #c2a8ff; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 0.5rem; }
+        .form-group input {
+            padding: 0.8rem; background: rgba(10, 5, 30, 0.5);
+            border: 1px solid rgba(159, 121, 255, 0.5);
+            border-radius: 8px; color: #fff; font-size: 1rem;
+            font-family: sans-serif; transition: all 0.3s ease;
+        }
+        .form-group input:focus { outline: none; border-color: #c2a8ff; box-shadow: 0 0 10px var(--primary-glow); }
+        
+        .predict-btn {
+            grid-column: 1 / -1; width: 100%; padding: 1rem;
+            background: linear-gradient(90deg, #8e44ad, #9b59b6);
+            border: none; border-radius: 8px; color: white; font-size: 1.1rem;
+            font-family: 'Orbitron', sans-serif; text-transform: uppercase;
+            cursor: pointer; transition: all 0.3s ease;
+            margin-top: 1rem; border-bottom: 3px solid #6c3383;
+        }
+        .predict-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(155, 89, 182, 0.4); }
+
+        .result-container {
+            margin-top: 2rem; padding: 1.5rem;
+            background: rgba(10, 5, 30, 0.7);
+            border: 1px solid var(--primary-border); border-radius: 15px;
+            text-align: center; min-height: 60px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: sans-serif; transition: opacity 0.5s ease;
+        }
+
+        footer {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            text-align: center; padding: 1rem;
+            background: rgba(10, 5, 25, 0.8);
+            backdrop-filter: blur(8px);
+            border-top: 1px solid rgba(159, 121, 255, 0.2);
+            font-size: 0.9rem; color: #aaa; z-index: 10;
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">COSMIC GW</div>
+        <nav>
+             <a href="{% url 'main' %}">Home</a>
+            <a href="{% url 'k2' %}">Model Prediction</a>
+            <a href="{% url 'how_it_works' %}">How It Works</a>
+            <a href="{% url 'about' %}">About</a>
+        </nav>
+    </header>
+
+    <canvas id="space-canvas"></canvas>
+
+    <main class="content-container">
+        <h1>Model Customization</h1>
+        <p class="subtitle">Tune hyperparameters to build your own prediction model</p>
+
+        <div class="main-layout">
+            <div class="glass-container">
+                <div class="tuner-container">
+                    <div class="param-sliders">
+                        <h2>Hyperparameters</h2>
+                        <form id="tuningForm" action="{% url 'tune_model' %}" method="post">
+                            {% csrf_token %}
+                            
+                            <input type="hidden" name="n_hidden_layer" id="hidden_layers" value="1">
+                            <input type="hidden" name="num_neurons" id="hidden_neurons" value="16">
+                            <input type="hidden" name="d_rate" id="hidden_dropout" value="0.0">
+                            <input type="hidden" name="learning_rate" id="hidden_lr" value="0.0001">
+
+                            <div class="param-slider">
+                                <label><span>Hidden Layers</span><span id="layers-value">1</span></label>
+                                <input type="range" id="layers" min="1" max="5" value="1">
+                            </div>
+                            <div class="param-slider">
+                                <label><span>Neurons per Layer</span><span id="neurons-value">16</span></label>
+                                <input type="range" id="neurons" min="16" max="128" step="16" value="16">
+                            </div>
+                            <div class="param-slider">
+                                <label><span>Dropout</span><span id="dropout-value">0%</span></label>
+                                <input type="range" id="dropout" min="0" max="90" step="10" value="0">
+                            </div>
+                            <div class="param-slider">
+                                <label><span>Learning Rate</span><span id="lr-value">0.0001</span></label>
+                                <input type="range" id="lr" min="1" max="100" value="1">
+                            </div>
+                            
+                            <button type="submit" id="train-btn" class="train-btn">Train Model</button>
+                        </form>
+                         <div class="result-container">
+            <p id="resultText">Transmission log will appear here...</p>
+        </div>
+               
+                    </div>
+                        <canvas id="nn-visualization"></canvas>
+                </div>
+            </div>
+            
+            <div class="prediction-section" id="prediction-section">
+                <div class="form-container">
+            <form id="cosmicForm" action="{% url 'predict_koi_train' %}" method="post">
+                {% csrf_token %}
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="koi_period">KOI Period</label>
+                        <input type="number" step="any" id="koi_period" name="koi_period" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="koi_impact">KOI Impact</label>
+                        <input type="number" step="any" id="koi_impact" name="koi_impact" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="koi_duration">KOI Duration</label>
+                        <input type="number" step="any" id="koi_duration" name="koi_duration" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="koi_depth">KOI Depth</label>
+                        <input type="number" step="any" id="koi_depth" name="koi_depth" required>
+                    </div>
+                     <div class="form-group">
+                        <label for="koi_prad">KOI PRAD</label>
+                        <input type="number" step="any" id="koi_prad" name="koi_prad" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="koi_sma">KOI SMA</label>
+                        <input type="number" step="any" id="koi_sma" name="koi_sma" required>
+                    </div>
+                     <div class="form-group">
+                        <label for="koi_teq">KOI TEQ</label>
+                        <input type="number" step="any" id="koi_teq" name="koi_teq" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="koi_insol">KOI Insol</label>
+                        <input type="number" step="any" id="koi_insol" name="koi_insol" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="koi_model_snr">KOI Model SNR</label>
+                        <input type="number" step="any" id="koi_model_snr" name="koi_model_snr" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="koi_steff">KOI Steff</label>
+                        <input type="number" step="any" id="koi_steff" name="koi_steff" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="koi_slogg">KOI Slogg</label>
+                        <input type="number" step="any" id="koi_slogg" name="koi_slogg" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="koi_srad">KOI Srad</label>
+                        <input type="number" step="any" id="koi_srad" name="koi_srad" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="koi_kepmag">KOI Kepmag</label>
+                        <input type="number" step="any" id="koi_kepmag" name="koi_kepmag" required>
+                    </div>
+                     <button type="submit" class="submit-btn">Transmit KOI Data</button>
+                </div>
+            </form>
+        </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Cosmic Gateway. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // --- Space Visualization Script (Same as k2.html) ---
+        const spaceCanvas = document.getElementById('space-canvas');
+        const s_ctx = spaceCanvas.getContext('2d');
+        let width, height, stars = [], comets = [], milkyWayStars = [], 
+            starCount = 400, milkyWayStarCount = 2500,
+            mouse = { x: null, y: null };
+
+        function randomGaussian(mean, stdDev) {
+            let u1, u2, w;
+            do {
+                u1 = 2 * Math.random() - 1;
+                u2 = 2 * Math.random() - 1;
+                w = u1 * u1 + u2 * u2;
+            } while (w >= 1);
+            w = Math.sqrt((-2 * Math.log(w)) / w);
+            return mean + stdDev * u1 * w;
+        }
+
+        function initSpace() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            spaceCanvas.width = width;
+            spaceCanvas.height = height;
+            mouse.x = width / 2;
+            mouse.y = height / 2;
+            stars = [];
+            for (let i = 0; i < starCount; i++) {
+                stars.push({
+                    x: Math.random() * width, y: Math.random() * height,
+                    size: Math.random() * 1.5 + 0.5, speed: Math.random() * 0.4 + 0.1,
+                    alpha: Math.random() * 0.5 + 0.5, alphaDirection: 1,
+                    twinkleSpeed: Math.random() * 0.015
+                });
+            }
+            milkyWayStars = [];
+            for (let i = 0; i < milkyWayStarCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = randomGaussian(0, width * 0.3);
+                const x = width / 2 + Math.cos(angle) * radius;
+                const y = height / 2 + Math.sin(angle) * radius * 0.2 + randomGaussian(0, 30);
+                milkyWayStars.push({
+                    x: x, y: y, size: Math.random() * 0.8,
+                    alpha: Math.random() * 0.3 + 0.05, alphaDirection: 1,
+                    twinkleSpeed: Math.random() * 0.01
+                });
+            }
+            comets = [];
+        }
+
+        function Comet() {
+            this.x = Math.random() * width; this.y = -50;
+            this.speed = Math.random() * 3 + 2; this.size = Math.random() * 2 + 1;
+            this.length = Math.random() * 100 + 50;
+        }
+
+        function drawComets() {
+            for (let i = 0; i < comets.length; i++) {
+                const comet = comets[i];
+                const gradient = s_ctx.createLinearGradient(comet.x, comet.y, comet.x - this.length / 4, comet.y - comet.length);
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.5)');
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                s_ctx.fillStyle = gradient;
+                s_ctx.beginPath();
+                s_ctx.arc(comet.x, comet.y, comet.size, 0, Math.PI * 2);
+                s_ctx.fill();
+                comet.y += comet.speed;
+                comet.x -= comet.speed / 4;
+                if (comet.y > height + 50) { comets.splice(i, 1); i--; }
+            }
+        }
+
+        function animateSpace() {
+            s_ctx.clearRect(0, 0, width, height);
+            const gradient = s_ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, Math.max(width, height));
+            gradient.addColorStop(0, 'rgba(15, 5, 40, 0.1)');
+            gradient.addColorStop(1, 'rgba(0, 0, 10, 0.5)');
+            s_ctx.fillStyle = gradient;
+            s_ctx.fillRect(0, 0, width, height);
+            const parallaxX = (mouse.x - width / 2) * 0.005;
+            const parallaxY = (mouse.y - height / 2) * 0.005;
+            s_ctx.save();
+            s_ctx.translate(parallaxX * 0.2, parallaxY * 0.2);
+            s_ctx.rotate(0.2);
+            for (const star of milkyWayStars) {
+                if (star.alpha > 0.4 || star.alpha < 0.05) { star.alphaDirection *= -1; }
+                star.alpha += star.twinkleSpeed * star.alphaDirection;
+                s_ctx.globalAlpha = star.alpha;
+                s_ctx.fillStyle = 'white';
+                s_ctx.beginPath();
+                s_ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                s_ctx.fill();
+            }
+            s_ctx.restore();
+            for (const star of stars) {
+                star.y -= star.speed;
+                if (star.y < 0) { star.y = height; star.x = Math.random() * width; }
+                if (star.alpha > 1 || star.alpha < 0.1) { star.alphaDirection *= -1; }
+                star.alpha += star.twinkleSpeed * star.alphaDirection;
+                s_ctx.save();
+                s_ctx.globalAlpha = star.alpha;
+                s_ctx.fillStyle = 'white';
+                s_ctx.beginPath();
+                s_ctx.arc(star.x + parallaxX * star.size, star.y + parallaxY * star.size, star.size, 0, Math.PI * 2);
+                s_ctx.fill();
+                s_ctx.restore();
+            }
+            if (Math.random() < 0.005) { comets.push(new Comet()); }
+            drawComets();
+            requestAnimationFrame(animateSpace);
+        }
+        
+        window.addEventListener('resize', initSpace);
+        window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+        initSpace();
+        animateSpace();
+
+        // --- Interactive Neural Network Visualization ---
+        const nnCanvas = document.getElementById('nn-visualization');
+        const nnCtx = nnCanvas.getContext('2d');
+        const sliders = {
+            layers: document.getElementById('layers'),
+            neurons: document.getElementById('neurons'),
+        };
+        let networkStructure = { layers: [], connections: [] };
+
+        function buildNetworkStructure() {
+            networkStructure = { layers: [], connections: [] };
+            const layers = parseInt(sliders.layers.value);
+            const neurons = parseInt(sliders.neurons.value);
+            const w = nnCanvas.width;
+            const h = nnCanvas.height;
+            if (w === 0 || h === 0) return;
+
+            const layerX = (i) => w / (layers + 2) * (i + 1);
+            const neuronY = (j, count) => h / (count + 1) * (j + 1);
+            
+            let prevLayerPositions = [];
+
+            for (let i = 0; i <= layers + 1; i++) {
+                const isInput = i === 0;
+                const isOutput = i === layers + 1;
+                let currentNeuronsCount = neurons;
+                if (isInput) currentNeuronsCount = 3;
+                if (isOutput) currentNeuronsCount = 2;
+                
+                let currentLayerPositions = [];
+                let currentLayer = [];
+
+                for (let j = 0; j < currentNeuronsCount; j++) {
+                    const x = layerX(i);
+                    const y = neuronY(j, currentNeuronsCount);
+                    const radius = isInput || isOutput ? 6 : Math.max(4, neurons / 22);
+                    currentLayer.push({ x, y, radius });
+                    currentLayerPositions.push({ x, y });
+                    if (i > 0) {
+                        for (let k = 0; k < prevLayerPositions.length; k++) {
+                            networkStructure.connections.push({ from: prevLayerPositions[k], to: { x, y } });
+                        }
+                    }
+                }
+                networkStructure.layers.push(currentLayer);
+                prevLayerPositions = currentLayerPositions;
+            }
+        }
+        
+        function animateNN(timestamp) {
+            const w = nnCanvas.width;
+            const h = nnCanvas.height;
+            nnCtx.clearRect(0, 0, w, h);
+            const time = timestamp * 0.001;
+
+            nnCtx.lineWidth = 1;
+            networkStructure.connections.forEach((conn, index) => {
+                const shimmer = Math.sin(time * 3 + index * 0.2) * 0.25 + 0.25;
+                nnCtx.strokeStyle = `rgba(159, 121, 255, ${shimmer})`;
+                nnCtx.beginPath();
+                nnCtx.moveTo(conn.from.x, conn.from.y);
+                nnCtx.lineTo(conn.to.x, conn.to.y);
+                nnCtx.stroke();
+            });
+
+            nnCtx.fillStyle = '#c2a8ff';
+            networkStructure.layers.forEach((layer, layerIndex) => {
+                layer.forEach((neuron, neuronIndex) => {
+                    nnCtx.beginPath();
+                    const pulse = Math.sin(time * 4 + layerIndex - neuronIndex) * 0.5 + 0.5;
+                    const radius = neuron.radius + pulse * 1.5;
+                    nnCtx.arc(neuron.x, neuron.y, radius, 0, Math.PI * 2);
+                    
+                    const glow = nnCtx.createRadialGradient(neuron.x, neuron.y, 0, neuron.x, neuron.y, radius * 2);
+                    glow.addColorStop(0, 'rgba(210, 180, 255, 0.8)');
+                    glow.addColorStop(0.5, 'rgba(190, 150, 255, 0.4)');
+                    glow.addColorStop(1, 'rgba(159, 121, 255, 0)');
+                    nnCtx.fillStyle = glow;
+                    nnCtx.fill();
+                });
+            });
+
+            requestAnimationFrame(animateNN);
+        }
+        
+        function setupNNCanvas() {
+            nnCanvas.width = nnCanvas.offsetWidth;
+            nnCanvas.height = nnCanvas.offsetHeight;
+            buildNetworkStructure();
+        }
+        
+        window.addEventListener('resize', setupNNCanvas);
+        Object.values(sliders).forEach(s => s.addEventListener('input', buildNetworkStructure));
+        
+        setTimeout(() => {
+            setupNNCanvas();
+            requestAnimationFrame(animateNN);
+        }, 100);
+        
+// Replace the entire "--- Hyperparameter Form Logic ---" section in your script
+
+// --- Hyperparameter Form Logic ---
+const tuningForm = document.getElementById('tuningForm');
+const layersSlider = document.getElementById('layers');
+const neuronsSlider = document.getElementById('neurons');
+const dropoutSlider = document.getElementById('dropout');
+const lrSlider = document.getElementById('lr');
+
+// References to hidden inputs
+const hiddenLayers = document.getElementById('hidden_layers');
+const hiddenNeurons = document.getElementById('hidden_neurons');
+const hiddenDropout = document.getElementById('hidden_dropout');
+const hiddenLR = document.getElementById('hidden_lr');
+
+// References to display values
+const layersValue = document.getElementById('layers-value');
+const neuronsValue = document.getElementById('neurons-value');
+const dropoutValue = document.getElementById('dropout-value');
+const lrValue = document.getElementById('lr-value');
+
+// Event Listeners to update display AND hidden inputs
+layersSlider.addEventListener('input', (e) => {
+    layersValue.textContent = e.target.value;
+    hiddenLayers.value = e.target.value;
+});
+neuronsSlider.addEventListener('input', (e) => {
+    neuronsValue.textContent = e.target.value;
+    hiddenNeurons.value = e.target.value;
+});
+dropoutSlider.addEventListener('input', (e) => {
+    dropoutValue.textContent = `${e.target.value}%`;
+    hiddenDropout.value = e.target.value / 100; // Convert to decimal
+});
+lrSlider.addEventListener('input', (e) => {
+    const value = parseFloat(e.target.value) / 10000;
+    lrValue.textContent = value.toFixed(4);
+    hiddenLR.value = value;
+});
+
+const trainBtn = document.getElementById('train-btn');
+const predictionSection = document.getElementById('prediction-section');
+const resultContainer = document.getElementById('result-container');
+const resultText = document.getElementById('resultText');
+
+tuningForm.addEventListener('submit', (e) => {
+    e.preventDefault(); // Stop the default page reload
+
+    trainBtn.disabled = true;
+    trainBtn.textContent = "TRAINING IN PROGRESS...";
+    resultText.innerHTML = "Transmitting parameters to the training module... Stand by. 🚀";
+
+    const formData = new FormData(tuningForm);
+
+    fetch(tuningForm.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken') // Important for Django
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Create a rich result display
+            const resultsHTML = `
+                <h2>Training Complete!</h2>
+                <p><strong>Final Test Accuracy:</strong> ${data.results.final_accuracy}%</p>
+                <p><strong>Best Accuracy Achieved:</strong> ${data.results.best_accuracy}% (Stopped at Epoch ${data.results.last_epoch})</p>
+                <img src="data:image/png;base64,${data.plot_url}" alt="Training Accuracy Plot" style="max-width: 100%; border-radius: 10px; margin-top: 1rem;">
+            `;
+            resultContainer.innerHTML = resultsHTML;
+
+            // Show the prediction section
+            predictionSection.style.display = 'block';
+            setTimeout(() => predictionSection.style.opacity = 1, 50);
+
+        } else {
+            resultText.textContent = `Error: ${data.message}`;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        resultText.textContent = 'A network error occurred. Could not complete training.';
+    })
+    .finally(() => {
+        // Re-enable the button after the process is finished
+        trainBtn.disabled = false;
+        trainBtn.textContent = "Train Model";
+    });
+});
+
+    </script>
+</body>
+</html>
+

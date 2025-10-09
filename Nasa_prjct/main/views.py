@@ -14,7 +14,10 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, TensorDataset
 import copy
 from django.conf import settings
+import matplotlib
+matplotlib.use('Agg')  
 import matplotlib.pyplot as plt
+
 import base64
 
 
@@ -35,7 +38,7 @@ bst.load_model(xgb_model_path)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # --- DATA LOADING (runs once) ---
-df = pd.read_csv('C:\\Users\\100ra\\OneDrive\\Desktop\\Nasa_prjct\\Nasa_prjct\\main\\KOI.csv')
+df = pd.read_csv('C:\\Users\\100ra\\OneDrive\\Desktop\\Ram\\Nasa_prjct\\Nasa_prjct\\main\\KOI.csv')
 df = df.drop(df[df.koi_disposition == 'FALSE POSITIVE'].index, axis=0).reset_index(drop=True)
 df['koi_disposition'] = df['koi_disposition'].map({"CANDIDATE":1, "CONFIRMED":0})
 X = df.iloc[:,1:].dropna()
@@ -166,8 +169,8 @@ def main(request):
 def k2(request):
     return render(request, 'main/k2.html')
 
-def tune_model_view(request):
-    return render(request, 'main/train.html')       
+# def tune_model_view(request):
+#     return render(request, 'main/train.html')       
 
 def about(request):
     return render(request, 'main/about.html')   
@@ -257,7 +260,7 @@ def tune_model_view(request):
             }
 
             # --- Generate the accuracy plot ---
-            plt.figure(figsize=(10, 6))
+            plt.figure(figsize=(7, 5))
             plt.plot(test_acc_history, label='Test Accuracy', color='orange')
             plt.xlabel('Epochs')
             plt.ylabel('Accuracy (%)')
@@ -285,7 +288,7 @@ def tune_model_view(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
     # For GET requests, just show the page
-    return render(request, 'main/train.html')
+    return render(request, 'main/train.html' )
 
 # main/views.py
 

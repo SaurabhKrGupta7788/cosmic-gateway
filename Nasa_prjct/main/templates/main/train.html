@@ -92,6 +92,7 @@
 
     .prediction-section{
       display:none; opacity:0; transition:opacity .5s ease-in-out;
+      width: 100%;
     }
 
     .form-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:1.5rem; text-align:left; }
@@ -104,9 +105,17 @@
     .predict-btn:hover{ transform:translateY(-3px); box-shadow:0 10px 20px rgba(155,89,182,0.4); }
 
     .result-container{
-      margin-top:2rem; padding:1.5rem; background: rgba(10,5,30,0.7);
-      border:1px solid var(--primary-border); border-radius:15px; text-align:center; min-height:60px;
-      display:flex; align-items:center; justify-content:center; font-family:sans-serif; transition:opacity .5s ease;
+      margin-top:2rem; 
+      padding:0; /* Remove padding to let inner content control spacing */
+      background: transparent; /* Remove background to let inner containers handle it */
+      border: none; /* Remove border */
+      border-radius:0; 
+      text-align:center; 
+      min-height:auto; /* Remove fixed height */
+      display:block; /* Change from flex to block */
+      font-family:sans-serif; 
+      transition:opacity .5s ease;
+      width: 100%;
     }
 
     footer{
@@ -117,6 +126,158 @@
     /* Responsive tweaks for canvases and layout */
     @media (max-width:899px){
       #nn-visualization{ min-height:300px; }
+    }
+
+    /* NEW: Container for results and prediction form (initially hidden) */
+    #after-training-section {
+        display: none;
+        border-top: 1px solid var(--primary-border);
+        padding-top: 2.5rem;
+    }
+
+    /* NEW: Two-column layout for results and form */
+    .results-and-prediction-layout {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+        align-items: flex-start;
+    }
+
+    @media (min-width: 1200px) {
+        .results-and-prediction-layout { grid-template-columns: 350px 1fr; }
+    }
+    
+    .result-card h2 {
+        font-family: 'Orbitron', sans-serif; font-size: 1.5rem; text-align: left; margin-bottom: 1.5rem;
+        background: none; -webkit-background-clip: unset; -webkit-text-fill-color: unset;
+        color: #fff; text-shadow: none;
+    }
+    .result-card p { color: var(--body-text); margin-bottom: 0.5rem; font-size: 1rem; text-align: left; }
+    .result-card strong { color: #e0e0ff; font-weight: 400; }
+    .plot-image { width: 100%; border-radius: 10px; margin-top: 1rem; border: 1px solid var(--primary-border); }
+    .session-info { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--primary-border); color: #a29bfe; font-family: 'Courier New', Courier, monospace; font-size: 0.9rem; text-align: left; }
+    
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; text-align: left; }
+    .form-group label { color: #c2a8ff; font-size: .9rem; text-transform: uppercase; margin-bottom: .5rem; }
+    .form-group input { padding: .8rem; background: rgba(10, 5, 30, 0.5); border: 1px solid rgba(159, 121, 255, 0.5); border-radius: 8px; color: #fff; font-size: 1rem; transition: all .3s ease; }
+    .form-group input:focus { outline: none; border-color: #c2a8ff; box-shadow: 0 0 10px var(--primary-glow); }
+    .predict-btn { grid-column: 1 / -1; width: 100%; padding: 1rem; background: linear-gradient(90deg, #8e44ad, #9b59b6); border: none; border-radius: 8px; color: white; font-size: 1.1rem; font-family: 'Orbitron', sans-serif; text-transform: uppercase; cursor: pointer; transition: all .3s ease; margin-top: 1rem; border-bottom: 3px solid #6c3383; }
+    .predict-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(155, 89, 182, 0.4); }
+
+    footer {
+        position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; padding: 1rem;
+        background: rgba(10, 5, 25, 0.8); backdrop-filter: blur(8px); border-top: 1px solid rgba(159, 121, 255, 0.2); font-size: .9rem; color: #aaa; z-index: 10;
+    }
+
+    /* NEW: Improved training results layout */
+    .training-results-container {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        margin-top: 0;
+        width: 100%;
+    }
+    
+    @media (min-width: 900px) {
+        .training-results-container {
+            grid-template-columns: 1fr 1fr;
+            align-items: start;
+        }
+    }
+    
+    .training-stats {
+        background: rgba(10, 5, 30, 0.7);
+        border: 1px solid var(--primary-border);
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: left;
+        width: 100%;
+    }
+    
+    .training-stats h3 {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.3rem;
+        margin-bottom: 1.5rem;
+        color: #fff;
+        text-align: center;
+        border-bottom: 1px solid var(--primary-border);
+        padding-bottom: 0.75rem;
+    }
+    
+    .stat-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(159, 121, 255, 0.2);
+    }
+    
+    .stat-label {
+        color: #c2a8ff;
+        font-weight: 400;
+    }
+    
+    .stat-value {
+        color: #fff;
+        font-weight: 700;
+        text-shadow: 0 0 5px rgba(159, 121, 255, 0.7);
+    }
+    
+    .accuracy-highlight {
+        background: linear-gradient(90deg, rgba(22, 160, 133, 0.2), rgba(26, 188, 156, 0.2));
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+        text-align: center;
+        border: 1px solid rgba(22, 160, 133, 0.4);
+    }
+    
+    .accuracy-highlight .stat-value {
+        font-size: 1.5rem;
+        color: #1abc9c;
+    }
+    
+    .training-plot {
+        background: rgba(10, 5, 30, 0.7);
+        border: 1px solid var(--primary-border);
+        border-radius: 15px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .training-plot h3 {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+        color: #fff;
+        text-align: center;
+    }
+    
+    .plot-image {
+        width   : 800px;
+        max-width: 750px;
+        border-radius: 10px;
+        border: 1px solid var(--primary-border);
+    }
+    
+    .session-info {
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--primary-border);
+        color: #a29bfe;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.9rem;
+        text-align: left;
+    }
+
+    /* Fix for initial result text */
+    #resultText {
+        color: var(--primary-text);
+        font-style: italic;
     }
   </style>
 </head>
@@ -186,7 +347,8 @@
       </div>
 
       <div class="prediction-section" id="prediction-section">
-        <div class="form-container">
+        <div class="glass-container">
+          <h2>Make Predictions</h2>
           <form id="cosmicForm" action="{% url 'predict_koi_train' %}" method="post">
             {% csrf_token %}
             <div class="form-grid">
@@ -626,14 +788,47 @@
         if (data.status === 'success') {
           // Build result HTML using returned results and plot
           const resultsHTML = `
-            <div style="width:100%;">
-              <h2 style="margin:0 0 .5rem 0; color:#fff;">Training Complete</h2>
-              <p style="margin:.25rem 0;"><strong>Final Test Accuracy:</strong> ${data.results.final_accuracy}%</p>
-              <p style="margin:.25rem 0;"><strong>Best Accuracy Achieved:</strong> ${data.results.best_accuracy}% (Stopped at Epoch ${data.results.last_epoch})</p>
-              ${data.plot_url ? `<img src="data:image/png;base64,${data.plot_url}" alt="Training Accuracy Plot" style="max-width:100%; border-radius:10px; margin-top:1rem;">` : ''}
-              <div style="margin-top:1rem; text-align:left; color:#cfc9ff;">
-                <p style="margin:.25rem 0;"><strong>Saved to session:</strong> tuned_model_state_b64 and tuned_model_params</p>
-                <p style="margin:.25rem 0;">You can now use the trained model for predictions in this session.</p>
+            <div class="training-results-container">
+              <div class="training-stats">
+                <h3>Training Results</h3>
+                <div class="stat-item">
+                  <span class="stat-label">Hidden Layers:</span>
+                  <span class="stat-value">${data.results.n_hidden_layer}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Neurons per Layer:</span>
+                  <span class="stat-value">${data.results.num_neurons}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Dropout Rate:</span>
+                  <span class="stat-value">${(data.results.d_rate * 100).toFixed(0)}%</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Learning Rate:</span>
+                  <span class="stat-value">${data.results.learning_rate}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Training Epochs:</span>
+                  <span class="stat-value">${data.results.last_epoch}</span>
+                </div>
+                <div class="accuracy-highlight">
+                  <div class="stat-item">
+                    <span class="stat-label">Final Test Accuracy:</span>
+                    <span class="stat-value">${data.results.final_accuracy}%</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-label">Best Accuracy:</span>
+                    <span class="stat-value">${data.results.best_accuracy}%</span>
+                  </div>
+                </div>
+                <div class="session-info">
+                  <p><strong>Model saved to session:</strong> tuned_model_state_b64 and tuned_model_params</p>
+                  <p>You can now use the trained model for predictions in this session.</p>
+                </div>
+              </div>
+              <div class="training-plot">
+                <h3>Training Progress</h3>
+                ${data.plot_url ? `<img src="data:image/png;base64,${data.plot_url}" alt="Training Accuracy Plot" class="plot-image">` : '<p>No plot available</p>'}
               </div>
             </div>
           `;
@@ -652,14 +847,10 @@
         console.error('Error:', error);
         resultText.textContent = 'A network error occurred. Could not complete training: ' + error.message;
       })
-       .finally(() => {
-            // This runs whether the fetch succeeded or failed
-            resultElement.style.opacity = 1;
-            submitButton.textContent = 'Transmit KOI Data';
-            submitButton.disabled = false;
-            form.reset(); // Clear the form fields
-        });
-
+      .finally(() => {
+        trainBtn.disabled = false;
+        trainBtn.textContent = "Train Model";
+      });
     });
 
     /* ------------------------------------------------

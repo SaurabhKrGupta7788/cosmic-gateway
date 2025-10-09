@@ -260,7 +260,7 @@ def tune_model_view(request):
             }
 
             # --- Generate the accuracy plot ---
-            plt.figure(figsize=(7, 5))
+            plt.figure(figsize=(10, 8))
             plt.plot(test_acc_history, label='Test Accuracy', color='orange')
             plt.xlabel('Epochs')
             plt.ylabel('Accuracy (%)')
